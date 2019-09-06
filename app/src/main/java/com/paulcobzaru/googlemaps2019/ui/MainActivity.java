@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.text.InputType;
@@ -26,7 +27,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.GeoPoint;
 import com.paulcobzaru.googlemaps2019.R;
 import com.paulcobzaru.googlemaps2019.adapters.ChatroomRecyclerAdapter;
 import com.paulcobzaru.googlemaps2019.models.Chatroom;
@@ -74,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements
     private FirebaseFirestore mDb;
 
     private boolean mLocationPermissionGranted = false;
+    private FusedLocationProviderClient mFusedLocationProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,8 +91,26 @@ public class MainActivity extends AppCompatActivity implements
 
         mDb = FirebaseFirestore.getInstance();
 
+        mFusedLocationProvider = LocationServices.getFusedLocationProviderClient(this);
+
         initSupportActionBar();
         initChatroomRecyclerView();
+    }
+
+    private void getLastKnownLocation() {
+        Log.d(TAG, "getLastKnownLocation: called.");
+
+        mFusedLocationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if(task.isSuccessful()) {
+                    Location location = task.getResult();
+                    GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                    Log.d(TAG, "onComplete: latitude: " + geoPoint.getLatitude());
+                    Log.d(TAG, "onComplete: longitude: " + geoPoint.getLongitude());
+                }
+            }
+        });
     }
 
     private boolean checkMapServices(){
@@ -134,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements
                 == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
             getChatrooms();
+            getLastKnownLocation();
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
@@ -186,6 +210,7 @@ public class MainActivity extends AppCompatActivity implements
             case PERMISSIONS_REQUEST_ENABLE_GPS: {
                 if(mLocationPermissionGranted){
                     getChatrooms();
+                    getLastKnownLocation();
                 }
                 else{
                     getLocationPermission();
@@ -331,11 +356,11 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        getChatrooms();
 
         if(checkMapServices()) {
             if(mLocationPermissionGranted) {
                 getChatrooms();
+                getLastKnownLocation();
             } else {
                 getLocationPermission();
             }
