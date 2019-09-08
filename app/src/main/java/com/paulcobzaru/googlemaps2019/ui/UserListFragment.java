@@ -1,6 +1,7 @@
 package com.paulcobzaru.googlemaps2019.ui;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.paulcobzaru.googlemaps2019.R;
 import com.paulcobzaru.googlemaps2019.adapters.UserRecyclerAdapter;
 import com.paulcobzaru.googlemaps2019.models.User;
+import com.paulcobzaru.googlemaps2019.models.UserLocation;
 
 import java.util.ArrayList;
 
@@ -35,6 +37,7 @@ public class UserListFragment extends Fragment implements OnMapReadyCallback {
 
     //vars
     private ArrayList<User> mUserList = new ArrayList<>();
+    private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
     private UserRecyclerAdapter mUserRecyclerAdapter;
 
 
@@ -47,6 +50,8 @@ public class UserListFragment extends Fragment implements OnMapReadyCallback {
         super.onCreate(savedInstanceState);
         if(getArguments() != null){
             mUserList = getArguments().getParcelableArrayList(getString(R.string.intent_user_list));
+
+            mUserLocations = getArguments().getParcelableArrayList(getString(R.string.collection_user_locations));
         }
     }
 

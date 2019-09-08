@@ -33,6 +33,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.GeoPoint;
 import com.paulcobzaru.googlemaps2019.R;
+import com.paulcobzaru.googlemaps2019.UserClient;
 import com.paulcobzaru.googlemaps2019.adapters.ChatroomRecyclerAdapter;
 import com.paulcobzaru.googlemaps2019.models.Chatroom;
 
@@ -116,10 +117,15 @@ public class MainActivity extends AppCompatActivity implements
 
                         User user = task.getResult().toObject(User.class);
                         mUserLocation.setUser(user);
+
+                        ((UserClient)getApplicationContext()).setUser(user);
+
                         getLastKnownLocation();
                     }
                 }
             });
+        } else {
+            getLastKnownLocation();
         }
     }
 
