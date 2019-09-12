@@ -52,5 +52,8 @@ dependencies {
 
     // Google Services location
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
+
+    // Google map utils for clustering
+    implementation 'com.google.maps.android:android-maps-utils:0.5'
 }
 apply plugin: 'com.google.gms.google-services'
