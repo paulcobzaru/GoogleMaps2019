@@ -1,5 +1,6 @@
 package com.paulcobzaru.googlemaps2019.ui;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -51,6 +52,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.paulcobzaru.googlemaps2019.models.User;
 import com.paulcobzaru.googlemaps2019.models.UserLocation;
+import com.paulcobzaru.googlemaps2019.services.LocationService;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -100,6 +102,32 @@ public class MainActivity extends AppCompatActivity implements
 
         initSupportActionBar();
         initChatroomRecyclerView();
+    }
+
+    private void startLocationService(){
+        if(!isLocationServiceRunning()){
+            Intent serviceIntent = new Intent(this, LocationService.class);
+//        this.startService(serviceIntent);
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+
+                MainActivity.this.startForegroundService(serviceIntent);
+            }else{
+                startService(serviceIntent);
+            }
+        }
+    }
+
+    private boolean isLocationServiceRunning() {
+        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
+            if("com.paulcobzaru.googlemaps2019.services.LocationService".equals(service.service.getClassName())) {
+                Log.d(TAG, "isLocationServiceRunning: location service is already running.");
+                return true;
+            }
+        }
+        Log.d(TAG, "isLocationServiceRunning: location service is not running.");
+        return false;
     }
 
     private void getUserDetails() {
@@ -163,6 +191,8 @@ public class MainActivity extends AppCompatActivity implements
                     mUserLocation.setGeo_point(geoPoint);
                     mUserLocation.setTimestamp(null);
                     saveUserLocation();
+
+                    startLocationService();
                 }
             }
         });
